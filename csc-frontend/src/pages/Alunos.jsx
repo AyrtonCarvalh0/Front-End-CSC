@@ -21,6 +21,56 @@ function Field({ label, children }) {
 
 const emptyForm = { nome: '', cpf: '', data_nascimento: '', responsavelId: '', turmaId: '' }
 
+function FormAluno({ form, setForm, turmas, responsaveis }) {
+  const set = (key) => (e) => setForm(f => ({ ...f, [key]: e.target.value }))
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        <Field label="Nome completo">
+          <input className={inputCls} value={form.nome} onChange={set('nome')} placeholder="Ex: João Silva" />
+        </Field>
+        <Field label="CPF">
+          <input
+            className={inputCls}
+            value={form.cpf}
+            onChange={e => {
+              const raw = e.target.value.replace(/\D/g, '').slice(0, 11)
+              const fmt = raw
+                .replace(/(\d{3})(\d)/, '$1.$2')
+                .replace(/(\d{3})(\d)/, '$1.$2')
+                .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
+              setForm(f => ({ ...f, cpf: fmt }))
+            }}
+            placeholder="000.000.000-00"
+            maxLength={14}
+          />
+        </Field>
+      </div>
+      <Field label="Data de nascimento">
+        <input type="date" className={inputCls} value={form.data_nascimento} onChange={set('data_nascimento')} />
+      </Field>
+      <Field label="Responsável">
+        <select className={selectCls} value={form.responsavelId} onChange={set('responsavelId')}>
+          <option value="">Selecione um responsável</option>
+          {responsaveis.map(r => (
+            <option key={r.id} value={r.id}>{r.name} — {r.cpf}</option>
+          ))}
+        </select>
+      </Field>
+      <Field label="Turma">
+        <select className={selectCls} value={form.turmaId} onChange={set('turmaId')}>
+          <option value="">Selecione uma turma</option>
+          {turmas.map(t => (
+            <option key={t.id} value={t.id}>
+              {t.nome}{t.valorMensalidade ? ` — R$ ${t.valorMensalidade}` : ''}
+            </option>
+          ))}
+        </select>
+      </Field>
+    </div>
+  )
+}
+
 export default function Alunos() {
   const [alunos, setAlunos]               = useState([])
   const [turmas, setTurmas]               = useState([])
@@ -58,8 +108,6 @@ export default function Alunos() {
     a.nome?.toLowerCase().includes(busca.toLowerCase()) ||
     a.cpf?.includes(busca)
   )
-
-  const set = (key) => (e) => setForm(f => ({ ...f, [key]: e.target.value }))
 
   const handleCriar = async () => {
     if (!form.nome || !form.cpf) return toast.error('Nome e CPF são obrigatórios')
@@ -128,42 +176,6 @@ export default function Alunos() {
       turmaId: aluno.turma?.id ?? '',
     })
     setModalEditar(true)
-  }
-
-  function FormAluno() {
-    return (
-      <div className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <Field label="Nome completo">
-            <input className={inputCls} value={form.nome} onChange={set('nome')} placeholder="Ex: João Silva" />
-          </Field>
-          <Field label="CPF">
-            <input className={inputCls} value={form.cpf} onChange={set('cpf')} placeholder="000.000.000-00" />
-          </Field>
-        </div>
-        <Field label="Data de nascimento">
-          <input type="date" className={inputCls} value={form.data_nascimento} onChange={set('data_nascimento')} />
-        </Field>
-        <Field label="Responsável">
-          <select className={selectCls} value={form.responsavelId} onChange={set('responsavelId')}>
-            <option value="">Selecione um responsável</option>
-            {responsaveis.map(r => (
-              <option key={r.id} value={r.id}>{r.name} — {r.cpf}</option>
-            ))}
-          </select>
-        </Field>
-        <Field label="Turma">
-          <select className={selectCls} value={form.turmaId} onChange={set('turmaId')}>
-            <option value="">Selecione uma turma</option>
-            {turmas.map(t => (
-              <option key={t.id} value={t.id}>
-                {t.nome}{t.valorMensalidade ? ` — R$ ${t.valorMensalidade}` : ''}
-              </option>
-            ))}
-          </select>
-        </Field>
-      </div>
-    )
   }
 
   const columns = [
@@ -242,7 +254,7 @@ export default function Alunos() {
       )}
 
       <Modal open={modalCriar} onClose={() => setModalCriar(false)} title="Cadastrar aluno">
-        <FormAluno />
+        <FormAluno form={form} setForm={setForm} turmas={turmas} responsaveis={responsaveis} />
         <div className="flex justify-end gap-2 mt-6">
           <button onClick={() => setModalCriar(false)} className={btnSecondary}>Cancelar</button>
           <button onClick={handleCriar} className={btnPrimary}>Cadastrar</button>
@@ -250,7 +262,7 @@ export default function Alunos() {
       </Modal>
 
       <Modal open={modalEditar} onClose={() => setModalEditar(false)} title="Editar aluno">
-        <FormAluno />
+        <FormAluno form={form} setForm={setForm} turmas={turmas} responsaveis={responsaveis} />
         <div className="flex justify-end gap-2 mt-6">
           <button onClick={() => setModalEditar(false)} className={btnSecondary}>Cancelar</button>
           <button onClick={handleEditar} className={btnPrimary}>Salvar</button>

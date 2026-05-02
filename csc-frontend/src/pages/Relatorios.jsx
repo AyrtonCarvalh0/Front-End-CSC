@@ -10,8 +10,18 @@ import EmptyState from '../components/EmptyState'
 const inputCls = 'bg-bg-card border border-dim rounded-lg px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-accent/50 transition-colors placeholder-gray-600'
 const selectCls = inputCls + ' appearance-none'
 
-const mesHoje = () =>
-  new Date().toLocaleDateString('pt-BR', { month: '2-digit', year: 'numeric' }).replace('/', '/')
+// <input type="month"> returns "YYYY-MM"; API expects "MM/YYYY"
+const toApiMes = (val) => {
+  if (!val) return ''
+  const [ano, mes] = val.split('-')
+  return `${mes}/${ano}`
+}
+
+const mesHoje = () => {
+  const now = new Date()
+  const mm = String(now.getMonth() + 1).padStart(2, '0')
+  return `${now.getFullYear()}-${mm}`
+}
 
 export default function Relatorios() {
   const [turmas, setTurmas]         = useState([])
@@ -40,7 +50,7 @@ export default function Relatorios() {
     if (!mesFin) return toast.error('Informe o mês')
     setBuscandoFin(true)
     try {
-      const { data } = await api.get(`/pagamentos/resumo?mes=${encodeURIComponent(mesFin)}`)
+      const { data } = await api.get(`/pagamentos/resumo?mes=${encodeURIComponent(toApiMes(mesFin))}`)
       setResumo(data)
     } catch {
       toast.error('Erro ao buscar resumo')
@@ -67,7 +77,7 @@ export default function Relatorios() {
     setBuscandoTurma(true)
     try {
       const { data } = await api.get(
-        `/pagamentos/devedores/turma?mes=${encodeURIComponent(mesTurma)}&turmaId=${turmaId}`
+        `/pagamentos/devedores/turma?mes=${encodeURIComponent(toApiMes(mesTurma))}&turmaId=${turmaId}`
       )
       setDevTurma(data)
     } catch {
@@ -83,6 +93,7 @@ export default function Relatorios() {
     ? Math.min(100, Math.round((resumo.totalRecebido / resumo.totalEsperado) * 100))
     : 0
 
+  // GET /pagamentos/devedores returns full payment objects with nested aluno
   const totalDevido = todosDevedores.reduce((sum, d) => sum + (d.valor ?? 0), 0)
 
   const btnPrimary = 'px-4 py-2 bg-accent hover:bg-accent-hover text-white text-sm rounded-lg transition-colors font-medium'
@@ -99,10 +110,10 @@ export default function Relatorios() {
             <div className="flex-1">
               <label className="block text-xs text-gray-500 mb-1.5">Mês / Ano</label>
               <input
+                type="month"
                 className={inputCls + ' w-full'}
                 value={mesFin}
                 onChange={e => setMesFin(e.target.value)}
-                placeholder="MM/YYYY"
               />
             </div>
             <button onClick={buscarResumo} disabled={buscandoFin} className={btnPrimary}>
@@ -120,7 +131,7 @@ export default function Relatorios() {
             </div>
             <div className="bg-bg-secondary border border-dim rounded-xl p-5 max-w-xl">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-gray-500">Taxa de recebimento — {mesFin}</span>
+                <span className="text-xs text-gray-500">Taxa de recebimento — {toApiMes(mesFin)}</span>
                 <span className={`text-sm font-semibold ${pct >= 80 ? 'text-success' : pct >= 50 ? 'text-warning' : 'text-danger'}`}>
                   {pct}%
                 </span>
@@ -175,8 +186,8 @@ export default function Relatorios() {
                 </thead>
                 <tbody>
                   {todosDevedores.map((d, i) => (
-                    <tr key={i} className="border-b border-dim last:border-0">
-                      <td className="px-4 py-3 text-gray-300">{d.nomeAluno}</td>
+                    <tr key={d.id ?? i} className="border-b border-dim last:border-0">
+                      <td className="px-4 py-3 text-gray-300">{d.aluno?.nome ?? d.nomeAluno ?? '—'}</td>
                       <td className="px-4 py-3 font-mono text-xs text-gray-500">{d.mes}</td>
                       <td className="px-4 py-3"><Badge color="danger">{fmt(d.valor)}</Badge></td>
                     </tr>
@@ -197,7 +208,7 @@ export default function Relatorios() {
           <div className="flex items-end gap-3 flex-wrap">
             <div>
               <label className="block text-xs text-gray-500 mb-1.5">Mês / Ano</label>
-              <input className={inputCls} value={mesTurma} onChange={e => setMesTurma(e.target.value)} placeholder="MM/YYYY" />
+              <input type="month" className={inputCls} value={mesTurma} onChange={e => setMesTurma(e.target.value)} />
             </div>
             <div>
               <label className="block text-xs text-gray-500 mb-1.5">Turma</label>

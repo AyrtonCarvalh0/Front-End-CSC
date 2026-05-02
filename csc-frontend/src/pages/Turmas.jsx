@@ -21,6 +21,39 @@ function Field({ label, children }) {
 
 const emptyForm = { nome: '', idadeMin: '', idadeMax: '', capacidade: '', valorMensalidade: '', professorId: '' }
 
+function FormTurma({ form, setForm, professores }) {
+  const set = (key) => (e) => setForm(f => ({ ...f, [key]: e.target.value }))
+  return (
+    <div className="space-y-4">
+      <Field label="Nome da turma">
+        <input className={inputCls} value={form.nome} onChange={set('nome')} placeholder="Ex: Turma A" />
+      </Field>
+      <div className="grid grid-cols-3 gap-4">
+        <Field label="Idade mínima">
+          <input type="number" className={inputCls} value={form.idadeMin} onChange={set('idadeMin')} placeholder="0" />
+        </Field>
+        <Field label="Idade máxima">
+          <input type="number" className={inputCls} value={form.idadeMax} onChange={set('idadeMax')} placeholder="18" />
+        </Field>
+        <Field label="Capacidade">
+          <input type="number" className={inputCls} value={form.capacidade} onChange={set('capacidade')} placeholder="30" />
+        </Field>
+      </div>
+      <Field label="Valor da mensalidade (R$)">
+        <input type="number" step="0.01" className={inputCls} value={form.valorMensalidade} onChange={set('valorMensalidade')} placeholder="0,00" />
+      </Field>
+      <Field label="Professor responsável">
+        <select className={selectCls} value={form.professorId} onChange={set('professorId')}>
+          <option value="">Selecione um professor</option>
+          {professores.map(p => (
+            <option key={p.id} value={p.id}>{p.name}</option>
+          ))}
+        </select>
+      </Field>
+    </div>
+  )
+}
+
 export default function Turmas() {
   const [turmas, setTurmas]           = useState([])
   const [professores, setProfessores] = useState([])
@@ -29,7 +62,7 @@ export default function Turmas() {
   const [modalEditar, setModalEditar] = useState(false)
   const [modalAlunos, setModalAlunos] = useState(false)
   const [turmaSel, setTurmaSel]       = useState(null)
-  const [alunosTurma, setAlunosTurma] = useState([])
+  const [alunosDaTurma, setAlunosDaTurma] = useState([])
   const [form, setForm]               = useState(emptyForm)
 
   const load = async () => {
@@ -46,8 +79,6 @@ export default function Turmas() {
   }
 
   useEffect(() => { load() }, [])
-
-  const set = (key) => (e) => setForm(f => ({ ...f, [key]: e.target.value }))
 
   const payload = () => ({
     nome: form.nome,
@@ -93,14 +124,21 @@ export default function Turmas() {
     }
   }
 
-  const verAlunos = async (turma) => {
+  const handleVerAlunos = async (turma) => {
     try {
-      const { data } = await api.get(`/turmas/${turma.id}/alunos`)
-      setAlunosTurma(data)
+      let lista = []
+      const r1 = await api.get(`/turmas/${turma.id}/alunos`)
+      if (r1.data.length > 0) {
+        lista = r1.data
+      } else {
+        const r2 = await api.get('/aluno')
+        lista = r2.data.filter(a => a.turma?.id === turma.id)
+      }
+      setAlunosDaTurma(lista)
       setTurmaSel(turma)
       setModalAlunos(true)
     } catch {
-      toast.error('Erro ao carregar alunos')
+      toast.error('Erro ao carregar alunos da turma')
     }
   }
 
@@ -115,38 +153,6 @@ export default function Turmas() {
       professorId: turma.professor?.id ?? '',
     })
     setModalEditar(true)
-  }
-
-  function FormTurma() {
-    return (
-      <div className="space-y-4">
-        <Field label="Nome da turma">
-          <input className={inputCls} value={form.nome} onChange={set('nome')} placeholder="Ex: Turma A" />
-        </Field>
-        <div className="grid grid-cols-3 gap-4">
-          <Field label="Idade mínima">
-            <input type="number" className={inputCls} value={form.idadeMin} onChange={set('idadeMin')} placeholder="0" />
-          </Field>
-          <Field label="Idade máxima">
-            <input type="number" className={inputCls} value={form.idadeMax} onChange={set('idadeMax')} placeholder="18" />
-          </Field>
-          <Field label="Capacidade">
-            <input type="number" className={inputCls} value={form.capacidade} onChange={set('capacidade')} placeholder="30" />
-          </Field>
-        </div>
-        <Field label="Valor da mensalidade (R$)">
-          <input type="number" step="0.01" className={inputCls} value={form.valorMensalidade} onChange={set('valorMensalidade')} placeholder="0,00" />
-        </Field>
-        <Field label="Professor responsável">
-          <select className={selectCls} value={form.professorId} onChange={set('professorId')}>
-            <option value="">Selecione um professor</option>
-            {professores.map(p => (
-              <option key={p.id} value={p.id}>{p.name}</option>
-            ))}
-          </select>
-        </Field>
-      </div>
-    )
   }
 
   const fmt = (v) => v?.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) ?? '—'
@@ -167,7 +173,7 @@ export default function Turmas() {
       render: r => (
         <div className="flex gap-2">
           <button
-            onClick={e => { e.stopPropagation(); verAlunos(r) }}
+            onClick={e => { e.stopPropagation(); handleVerAlunos(r) }}
             title="Ver alunos"
             className="p-1.5 rounded-lg text-gray-500 hover:text-accent hover:bg-accent/10 transition-colors"
           >
@@ -210,7 +216,7 @@ export default function Turmas() {
       )}
 
       <Modal open={modalCriar} onClose={() => setModalCriar(false)} title="Nova turma">
-        <FormTurma />
+        <FormTurma form={form} setForm={setForm} professores={professores} />
         <div className="flex justify-end gap-2 mt-6">
           <button onClick={() => setModalCriar(false)} className={btnSecondary}>Cancelar</button>
           <button onClick={handleCriar} className={btnPrimary}>Criar</button>
@@ -218,7 +224,7 @@ export default function Turmas() {
       </Modal>
 
       <Modal open={modalEditar} onClose={() => setModalEditar(false)} title="Editar turma">
-        <FormTurma />
+        <FormTurma form={form} setForm={setForm} professores={professores} />
         <div className="flex justify-end gap-2 mt-6">
           <button onClick={() => setModalEditar(false)} className={btnSecondary}>Cancelar</button>
           <button onClick={handleEditar} className={btnPrimary}>Salvar</button>
@@ -226,11 +232,11 @@ export default function Turmas() {
       </Modal>
 
       <Modal open={modalAlunos} onClose={() => setModalAlunos(false)} title={`Alunos — ${turmaSel?.nome}`} size="lg">
-        {alunosTurma.length === 0 ? (
+        {alunosDaTurma.length === 0 ? (
           <p className="text-sm text-gray-600 text-center py-8">Nenhum aluno nesta turma</p>
         ) : (
           <div className="space-y-2">
-            {alunosTurma.map(a => (
+            {alunosDaTurma.map(a => (
               <div key={a.id} className="flex items-center justify-between py-2.5 px-3 bg-bg-card rounded-lg border border-dim">
                 <span className="text-sm text-gray-200">{a.nome}</span>
                 <span className="text-xs font-mono text-gray-500">{a.cpf}</span>
@@ -238,7 +244,7 @@ export default function Turmas() {
             ))}
           </div>
         )}
-        <p className="text-xs text-gray-600 mt-4">{alunosTurma.length} aluno(s)</p>
+        <p className="text-xs text-gray-600 mt-4">{alunosDaTurma.length} aluno(s)</p>
       </Modal>
     </div>
   )

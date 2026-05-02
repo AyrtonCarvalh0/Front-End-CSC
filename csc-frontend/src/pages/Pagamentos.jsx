@@ -11,8 +11,19 @@ import { CreditCard, AlertCircle, TrendingUp } from 'lucide-react'
 const inputCls = 'bg-bg-card border border-dim rounded-lg px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-accent/50 transition-colors placeholder-gray-600'
 const selectCls = inputCls + ' appearance-none'
 
-const mesHoje = () =>
-  new Date().toLocaleDateString('pt-BR', { month: '2-digit', year: 'numeric' }).replace('/', '/')
+// <input type="month"> returns "YYYY-MM"; API expects "MM/YYYY"
+const toApiMes = (val) => {
+  if (!val) return ''
+  const [ano, mes] = val.split('-')
+  return `${mes}/${ano}`
+}
+
+const mesHoje = () => {
+  const now = new Date()
+  const mm = String(now.getMonth() + 1).padStart(2, '0')
+  const yyyy = now.getFullYear()
+  return `${yyyy}-${mm}` // format for <input type="month">
+}
 
 export default function Pagamentos() {
   const [aba, setAba]               = useState('lista')
@@ -58,7 +69,8 @@ export default function Pagamentos() {
     if (!mesGerar) return toast.error('Informe o mês')
     setGerando(true)
     try {
-      const { data } = await api.post(`/pagamentos/gerar-mes?mes=${encodeURIComponent(mesGerar)}`)
+      const mes = toApiMes(mesGerar)
+      const { data } = await api.post(`/pagamentos/gerar-mes?mes=${encodeURIComponent(mes)}`)
       toast.success(typeof data === 'string' ? data : 'Mensalidades geradas!')
       loadPagamentos()
     } catch (e) {
@@ -84,7 +96,8 @@ export default function Pagamentos() {
     if (!mesDevedor) return toast.error('Informe o mês')
     setBuscandoDev(true)
     try {
-      const { data } = await api.get(`/pagamentos/devedores/busca?mes=${encodeURIComponent(mesDevedor)}`)
+      const mes = toApiMes(mesDevedor)
+      const { data } = await api.get(`/pagamentos/devedores/busca?mes=${encodeURIComponent(mes)}`)
       setDevedores(data)
     } catch {
       toast.error('Erro ao buscar devedores')
@@ -96,7 +109,8 @@ export default function Pagamentos() {
   const buscarDevedoresTurma = async () => {
     if (!mesTurma || !turmaId) return toast.error('Selecione mês e turma')
     try {
-      const { data } = await api.get(`/pagamentos/devedores/turma?mes=${encodeURIComponent(mesTurma)}&turmaId=${turmaId}`)
+      const mes = toApiMes(mesTurma)
+      const { data } = await api.get(`/pagamentos/devedores/turma?mes=${encodeURIComponent(mes)}&turmaId=${turmaId}`)
       setDevedoresPorTurma(data)
     } catch {
       toast.error('Erro ao buscar')
@@ -107,7 +121,8 @@ export default function Pagamentos() {
     if (!mesCaixa) return toast.error('Informe o mês')
     setBuscandoCaixa(true)
     try {
-      const { data } = await api.get(`/pagamentos/resumo?mes=${encodeURIComponent(mesCaixa)}`)
+      const mes = toApiMes(mesCaixa)
+      const { data } = await api.get(`/pagamentos/resumo?mes=${encodeURIComponent(mes)}`)
       setResumo(data)
     } catch {
       toast.error('Erro ao buscar resumo')
@@ -126,8 +141,8 @@ export default function Pagamentos() {
   ]
 
   const columns = [
-    { key: 'aluno',   label: 'Aluno',   render: r => <span className="font-medium text-gray-200">{r.nomeAluno ?? r.aluno?.nome ?? '—'}</span> },
-    { key: 'turma',   label: 'Turma',   render: r => r.turma?.nome ?? '—' },
+    { key: 'aluno',   label: 'Aluno',   render: r => <span className="font-medium text-gray-200">{r.aluno?.nome ?? '—'}</span> },
+    { key: 'turma',   label: 'Turma',   render: r => r.aluno?.turma?.nome ?? '—' },
     { key: 'mes',     label: 'Mês',     render: r => <span className="font-mono text-xs">{r.mes}</span> },
     { key: 'valor',   label: 'Valor',   render: r => fmt(r.valor) },
     {
@@ -207,12 +222,11 @@ export default function Pagamentos() {
             <div>
               <label className="block text-xs text-gray-500 mb-1.5">Mês / Ano</label>
               <input
+                type="month"
                 className={inputCls + ' w-full'}
                 value={mesGerar}
                 onChange={e => setMesGerar(e.target.value)}
-                placeholder="MM/YYYY"
               />
-              <p className="text-[10px] text-gray-600 mt-1">Formato: MM/YYYY — ex: 04/2025</p>
             </div>
             <button onClick={handleGerar} disabled={gerando} className={btnPrimary + ' w-full'}>
               {gerando ? 'Gerando...' : 'Gerar Mensalidades'}
@@ -230,7 +244,7 @@ export default function Pagamentos() {
             <div className="flex items-end gap-3">
               <div className="flex-1 max-w-xs">
                 <label className="block text-xs text-gray-500 mb-1.5">Mês / Ano</label>
-                <input className={inputCls + ' w-full'} value={mesDevedor} onChange={e => setMesDevedor(e.target.value)} placeholder="MM/YYYY" />
+                <input type="month" className={inputCls + ' w-full'} value={mesDevedor} onChange={e => setMesDevedor(e.target.value)} />
               </div>
               <button onClick={buscarDevedores} disabled={buscandoDev} className={btnPrimary}>
                 <span className="flex items-center gap-2"><Search size={14} />{buscandoDev ? 'Buscando...' : 'Buscar'}</span>
@@ -255,7 +269,7 @@ export default function Pagamentos() {
             <div className="flex items-end gap-3 flex-wrap">
               <div>
                 <label className="block text-xs text-gray-500 mb-1.5">Mês / Ano</label>
-                <input className={inputCls} value={mesTurma} onChange={e => setMesTurma(e.target.value)} placeholder="MM/YYYY" />
+                <input type="month" className={inputCls} value={mesTurma} onChange={e => setMesTurma(e.target.value)} />
               </div>
               <div>
                 <label className="block text-xs text-gray-500 mb-1.5">Turma</label>
@@ -290,7 +304,7 @@ export default function Pagamentos() {
             <div className="flex items-end gap-3">
               <div className="flex-1">
                 <label className="block text-xs text-gray-500 mb-1.5">Mês / Ano</label>
-                <input className={inputCls + ' w-full'} value={mesCaixa} onChange={e => setMesCaixa(e.target.value)} placeholder="MM/YYYY" />
+                <input type="month" className={inputCls + ' w-full'} value={mesCaixa} onChange={e => setMesCaixa(e.target.value)} />
               </div>
               <button onClick={buscarCaixa} disabled={buscandoCaixa} className={btnPrimary}>
                 {buscandoCaixa ? 'Buscando...' : 'Buscar'}

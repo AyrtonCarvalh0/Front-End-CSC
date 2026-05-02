@@ -19,6 +19,43 @@ function Field({ label, children }) {
 
 const emptyForm = { name: '', cpf: '', telefone: '', email: '' }
 
+function FormProf({ form, setForm }) {
+  const set = (key) => (e) => setForm(f => ({ ...f, [key]: e.target.value }))
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        <Field label="Nome completo">
+          <input className={inputCls} value={form.name} onChange={set('name')} placeholder="Ex: Maria Souza" />
+        </Field>
+        <Field label="CPF">
+          <input
+            className={inputCls}
+            value={form.cpf}
+            onChange={e => {
+              const raw = e.target.value.replace(/\D/g, '').slice(0, 11)
+              const fmt = raw
+                .replace(/(\d{3})(\d)/, '$1.$2')
+                .replace(/(\d{3})(\d)/, '$1.$2')
+                .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
+              setForm(f => ({ ...f, cpf: fmt }))
+            }}
+            placeholder="000.000.000-00"
+            maxLength={14}
+          />
+        </Field>
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <Field label="Telefone">
+          <input className={inputCls} value={form.telefone} onChange={set('telefone')} placeholder="(00) 00000-0000" />
+        </Field>
+        <Field label="Email">
+          <input type="email" className={inputCls} value={form.email} onChange={set('email')} placeholder="professor@escola.com" />
+        </Field>
+      </div>
+    </div>
+  )
+}
+
 export default function Professores() {
   const [professores, setProfessores] = useState([])
   const [loading, setLoading]         = useState(true)
@@ -45,8 +82,6 @@ export default function Professores() {
   const filtrados = professores.filter(p =>
     p.name?.toLowerCase().includes(busca.toLowerCase())
   )
-
-  const set = (key) => (e) => setForm(f => ({ ...f, [key]: e.target.value }))
 
   const handleCriar = async () => {
     if (!form.name || !form.cpf) return toast.error('Nome e CPF são obrigatórios')
@@ -87,29 +122,6 @@ export default function Professores() {
     setProfSel(prof)
     setForm({ name: prof.name ?? '', cpf: prof.cpf ?? '', telefone: prof.telefone ?? '', email: prof.email ?? '' })
     setModalEditar(true)
-  }
-
-  function FormProf() {
-    return (
-      <div className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <Field label="Nome completo">
-            <input className={inputCls} value={form.name} onChange={set('name')} placeholder="Ex: Maria Souza" />
-          </Field>
-          <Field label="CPF">
-            <input className={inputCls} value={form.cpf} onChange={set('cpf')} placeholder="000.000.000-00" />
-          </Field>
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <Field label="Telefone">
-            <input className={inputCls} value={form.telefone} onChange={set('telefone')} placeholder="(00) 00000-0000" />
-          </Field>
-          <Field label="Email">
-            <input type="email" className={inputCls} value={form.email} onChange={set('email')} placeholder="professor@escola.com" />
-          </Field>
-        </div>
-      </div>
-    )
   }
 
   const columns = [
@@ -167,7 +179,7 @@ export default function Professores() {
       )}
 
       <Modal open={modalCriar} onClose={() => setModalCriar(false)} title="Cadastrar professor">
-        <FormProf />
+        <FormProf form={form} setForm={setForm} />
         <div className="flex justify-end gap-2 mt-6">
           <button onClick={() => setModalCriar(false)} className={btnSecondary}>Cancelar</button>
           <button onClick={handleCriar} className={btnPrimary}>Cadastrar</button>
@@ -175,7 +187,7 @@ export default function Professores() {
       </Modal>
 
       <Modal open={modalEditar} onClose={() => setModalEditar(false)} title="Editar professor">
-        <FormProf />
+        <FormProf form={form} setForm={setForm} />
         <div className="flex justify-end gap-2 mt-6">
           <button onClick={() => setModalEditar(false)} className={btnSecondary}>Cancelar</button>
           <button onClick={handleEditar} className={btnPrimary}>Salvar</button>

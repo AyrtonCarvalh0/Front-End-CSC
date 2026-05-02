@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom'
 import {
   LayoutDashboard, Users, GraduationCap, BookOpen,
-  Heart, CreditCard, BarChart3
+  Heart, CreditCard, BarChart3, LogOut
 } from 'lucide-react'
 
 const nav = [
@@ -15,6 +15,14 @@ const nav = [
 ]
 
 export default function Sidebar() {
+  const user = JSON.parse(localStorage.getItem('csc_user') || '{}')
+
+  const handleLogout = () => {
+    localStorage.removeItem('csc_token')
+    localStorage.removeItem('csc_user')
+    window.location.href = '/login'
+  }
+
   return (
     <aside className="w-60 min-h-screen bg-bg-secondary border-r border-dim flex flex-col flex-shrink-0">
       <div className="px-6 py-7 border-b border-dim">
@@ -48,8 +56,21 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      <div className="p-4 border-t border-dim">
-        <div className="flex items-center gap-2 text-xs text-gray-500">
+      <div className="p-4 border-t border-dim space-y-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-xs font-medium text-gray-300">{user.login}</p>
+            <p className="text-[10px] text-gray-600 uppercase tracking-wider">{user.role}</p>
+          </div>
+          <button
+            onClick={handleLogout}
+            title="Sair"
+            className="p-1.5 rounded-lg text-gray-600 hover:text-danger hover:bg-danger/10 transition-colors"
+          >
+            <LogOut size={14} />
+          </button>
+        </div>
+        <div className="flex items-center gap-2 text-xs text-gray-600">
           <span className="w-2 h-2 rounded-full bg-success pulse-dot shadow-[0_0_6px_#2dd4a0]" />
           API conectada
         </div>

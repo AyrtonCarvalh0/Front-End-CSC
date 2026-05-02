@@ -19,6 +19,46 @@ function Field({ label, children }) {
 
 const emptyForm = { name: '', cpf: '', endereco: '', telefone: '', email: '' }
 
+function FormResp({ form, setForm }) {
+  const set = (key) => (e) => setForm(f => ({ ...f, [key]: e.target.value }))
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        <Field label="Nome completo">
+          <input className={inputCls} value={form.name} onChange={set('name')} placeholder="Ex: Ana Lima" />
+        </Field>
+        <Field label="CPF">
+          <input
+            className={inputCls}
+            value={form.cpf}
+            onChange={e => {
+              const raw = e.target.value.replace(/\D/g, '').slice(0, 11)
+              const fmt = raw
+                .replace(/(\d{3})(\d)/, '$1.$2')
+                .replace(/(\d{3})(\d)/, '$1.$2')
+                .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
+              setForm(f => ({ ...f, cpf: fmt }))
+            }}
+            placeholder="000.000.000-00"
+            maxLength={14}
+          />
+        </Field>
+      </div>
+      <Field label="Endereço">
+        <input className={inputCls} value={form.endereco} onChange={set('endereco')} placeholder="Rua, número, bairro..." />
+      </Field>
+      <div className="grid grid-cols-2 gap-4">
+        <Field label="Telefone">
+          <input className={inputCls} value={form.telefone} onChange={set('telefone')} placeholder="(00) 00000-0000" />
+        </Field>
+        <Field label="Email">
+          <input type="email" className={inputCls} value={form.email} onChange={set('email')} placeholder="email@exemplo.com" />
+        </Field>
+      </div>
+    </div>
+  )
+}
+
 export default function Responsaveis() {
   const [responsaveis, setResponsaveis] = useState([])
   const [loading, setLoading]           = useState(true)
@@ -53,12 +93,19 @@ export default function Responsaveis() {
     }
   }
 
-  const set = (key) => (e) => setForm(f => ({ ...f, [key]: e.target.value }))
+  // API field name uses accent: "endereço"
+  const buildPayload = () => ({
+    name: form.name,
+    cpf: form.cpf,
+    endereço: form.endereco,
+    telefone: form.telefone,
+    email: form.email,
+  })
 
   const handleCriar = async () => {
     if (!form.name || !form.cpf) return toast.error('Nome e CPF são obrigatórios')
     try {
-      await api.post('/responsavel', form)
+      await api.post('/responsavel', buildPayload())
       toast.success('Responsável cadastrado!')
       setModalCriar(false)
       setForm(emptyForm)
@@ -70,7 +117,7 @@ export default function Responsaveis() {
 
   const handleEditar = async () => {
     try {
-      await api.put(`/responsavel/${respSel.id}`, form)
+      await api.put(`/responsavel/${respSel.id}`, buildPayload())
       toast.success('Responsável atualizado!')
       setModalEditar(false)
       load()
@@ -100,32 +147,6 @@ export default function Responsaveis() {
       email: resp.email ?? '',
     })
     setModalEditar(true)
-  }
-
-  function FormResp() {
-    return (
-      <div className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <Field label="Nome completo">
-            <input className={inputCls} value={form.name} onChange={set('name')} placeholder="Ex: Ana Lima" />
-          </Field>
-          <Field label="CPF">
-            <input className={inputCls} value={form.cpf} onChange={set('cpf')} placeholder="000.000.000-00" />
-          </Field>
-        </div>
-        <Field label="Endereço">
-          <input className={inputCls} value={form.endereco} onChange={set('endereco')} placeholder="Rua, número, bairro..." />
-        </Field>
-        <div className="grid grid-cols-2 gap-4">
-          <Field label="Telefone">
-            <input className={inputCls} value={form.telefone} onChange={set('telefone')} placeholder="(00) 00000-0000" />
-          </Field>
-          <Field label="Email">
-            <input type="email" className={inputCls} value={form.email} onChange={set('email')} placeholder="email@exemplo.com" />
-          </Field>
-        </div>
-      </div>
-    )
   }
 
   const columns = [
@@ -184,7 +205,7 @@ export default function Responsaveis() {
       )}
 
       <Modal open={modalCriar} onClose={() => setModalCriar(false)} title="Cadastrar responsável">
-        <FormResp />
+        <FormResp form={form} setForm={setForm} />
         <div className="flex justify-end gap-2 mt-6">
           <button onClick={() => setModalCriar(false)} className={btnSecondary}>Cancelar</button>
           <button onClick={handleCriar} className={btnPrimary}>Cadastrar</button>
@@ -192,7 +213,7 @@ export default function Responsaveis() {
       </Modal>
 
       <Modal open={modalEditar} onClose={() => setModalEditar(false)} title="Editar responsável">
-        <FormResp />
+        <FormResp form={form} setForm={setForm} />
         <div className="flex justify-end gap-2 mt-6">
           <button onClick={() => setModalEditar(false)} className={btnSecondary}>Cancelar</button>
           <button onClick={handleEditar} className={btnPrimary}>Salvar</button>
