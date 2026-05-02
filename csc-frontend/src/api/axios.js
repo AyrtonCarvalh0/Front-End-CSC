@@ -14,10 +14,14 @@ api.interceptors.request.use(config => {
 api.interceptors.response.use(
   res => res,
   err => {
-    if (err.response?.status === 403 || err.response?.status === 401) {
-      localStorage.removeItem('csc_token')
-      localStorage.removeItem('csc_user')
-      window.location.href = '/login'
+    const status = err.response?.status
+    const isAuthEndpoint = err.config?.url?.includes('/auth/')
+
+    if ((status === 401 || status === 403) && !isAuthEndpoint) {
+      const token = localStorage.getItem('csc_token')
+      if (!token) {
+        window.location.href = '/login'
+      }
     }
     return Promise.reject(err)
   }

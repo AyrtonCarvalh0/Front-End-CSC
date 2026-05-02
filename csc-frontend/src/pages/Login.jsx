@@ -12,16 +12,25 @@ export default function Login() {
 
   const handleLogin = async (e) => {
     e.preventDefault()
-    if (!form.login || !form.senha) return toast.error('Preencha todos os campos')
+    if (!form.login || !form.senha) {
+      toast.error('Preencha login e senha')
+      return
+    }
     setLoading(true)
     try {
-      const { data } = await api.post('/auth/login', form)
+      const { data } = await api.post('/auth/login', {
+        login: form.login,
+        senha: form.senha,
+      })
       localStorage.setItem('csc_token', data.token)
       localStorage.setItem('csc_user', JSON.stringify({ login: data.login, role: data.role }))
       toast.success(`Bem-vindo, ${data.login}!`)
       navigate('/dashboard')
-    } catch {
-      toast.error('Login ou senha inválidos')
+    } catch (err) {
+      const msg = err.response?.data?.message
+        ?? err.response?.data
+        ?? 'Login ou senha inválidos'
+      toast.error(String(msg))
     } finally {
       setLoading(false)
     }
@@ -53,7 +62,7 @@ export default function Login() {
             <div className="relative">
               <input
                 type={mostrarSenha ? 'text' : 'password'}
-                className="w-full bg-bg-card border border-DEFAULT rounded-lg px-3 py-2.5 pr-10 text-sm focus:outline-none focus:border-accent/50 transition-colors"
+                className="w-full bg-bg-card border border-dim rounded-lg px-3 py-2.5 pr-10 text-sm focus:outline-none focus:border-accent/50 transition-colors"
                 placeholder="••••••••"
                 value={form.senha}
                 onChange={e => setForm(f => ({ ...f, senha: e.target.value }))}
