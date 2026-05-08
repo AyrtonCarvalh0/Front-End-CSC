@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom'
 import {
   LayoutDashboard, Users, GraduationCap, BookOpen,
-  Heart, CreditCard, BarChart3, LogOut
+  Heart, CreditCard, BarChart3, LogOut, Shield, UserCircle
 } from 'lucide-react'
 
 const nav = [
@@ -12,10 +12,13 @@ const nav = [
   { label: 'Responsáveis', to: '/responsaveis',  icon: Heart           },
   { label: 'Pagamentos',   to: '/pagamentos',    icon: CreditCard      },
   { label: 'Relatórios',   to: '/relatorios',    icon: BarChart3       },
+  { label: 'Usuários',     to: '/usuarios',      icon: Shield,     apenasAdmin: true },
+  { label: 'Meu Perfil',   to: '/meu-perfil',    icon: UserCircle      },
 ]
 
 export default function Sidebar() {
   const user = JSON.parse(localStorage.getItem('csc_user') || '{}')
+  const isAdmin = user.role === 'ADMIN'
 
   const handleLogout = () => {
     localStorage.removeItem('csc_token')
@@ -38,7 +41,7 @@ export default function Sidebar() {
         <p className="text-[10px] uppercase tracking-widest text-gray-600 px-3 mb-3">
           Menu
         </p>
-        {nav.map(({ label, to, icon: Icon }) => (
+        {nav.filter(item => !item.apenasAdmin || isAdmin).map(({ label, to, icon: Icon }) => (
           <NavLink
             key={to}
             to={to}

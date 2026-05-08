@@ -3,9 +3,11 @@ import { Plus, Trash2, Edit2, BookOpen, Users } from 'lucide-react'
 import toast from 'react-hot-toast'
 import api from '../api/axios'
 import Modal from '../components/Modal'
+import ModalConfirmacao from '../components/ModalConfirmacao'
 import Table from '../components/Table'
 import Badge from '../components/Badge'
 import EmptyState from '../components/EmptyState'
+import { useConfirmacao } from '../hooks/useConfirmacao'
 
 const inputCls = 'w-full bg-bg-card border border-dim rounded-lg px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-accent/50 transition-colors placeholder-gray-600'
 const selectCls = inputCls + ' appearance-none'
@@ -64,6 +66,7 @@ export default function Turmas() {
   const [turmaSel, setTurmaSel]       = useState(null)
   const [alunosDaTurma, setAlunosDaTurma] = useState([])
   const [form, setForm]               = useState(emptyForm)
+  const { config, confirmar, fechar } = useConfirmacao()
 
   const load = async () => {
     setLoading(true)
@@ -113,15 +116,21 @@ export default function Turmas() {
     }
   }
 
-  const handleDeletar = async (turma) => {
-    if (!confirm(`Deletar ${turma.nome}?`)) return
-    try {
-      await api.delete(`/turmas/${turma.id}`)
-      toast.success('Turma removida')
-      load()
-    } catch (e) {
-      toast.error(e.response?.data?.message ?? 'Erro ao deletar')
-    }
+  const handleDeletar = (turma) => {
+    confirmar({
+      titulo: 'Deletar turma',
+      mensagem: `Tem certeza que deseja remover a turma "${turma.nome}"? Os alunos vinculados perderão a turma.`,
+      tipo: 'warning',
+      onConfirmar: async () => {
+        try {
+          await api.delete(`/turmas/${turma.id}`)
+          toast.success('Turma removida')
+          load()
+        } catch (e) {
+          toast.error(e.response?.data?.message ?? 'Erro ao deletar')
+        }
+      },
+    })
   }
 
   const handleVerAlunos = async (turma) => {
@@ -214,6 +223,15 @@ export default function Turmas() {
       ) : (
         <Table columns={columns} data={turmas} />
       )}
+
+      <ModalConfirmacao
+        open={config.open}
+        onClose={fechar}
+        onConfirmar={config.onConfirmar}
+        titulo={config.titulo}
+        mensagem={config.mensagem}
+        tipo={config.tipo}
+      />
 
       <Modal open={modalCriar} onClose={() => setModalCriar(false)} title="Nova turma">
         <FormTurma form={form} setForm={setForm} professores={professores} />

@@ -7,6 +7,7 @@ import Badge from '../components/Badge'
 import StatCard from '../components/StatCard'
 import EmptyState from '../components/EmptyState'
 import { CreditCard, AlertCircle, TrendingUp } from 'lucide-react'
+import BotaoExportar from '../components/BotaoExportar'
 
 const inputCls = 'bg-bg-card border border-dim rounded-lg px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-accent/50 transition-colors placeholder-gray-600'
 const selectCls = inputCls + ' appearance-none'
@@ -194,9 +195,24 @@ export default function Pagamentos() {
         <div className="space-y-4">
           <div className="flex justify-between items-center">
             <p className="text-sm text-gray-500">{pagamentos.length} pagamentos encontrados</p>
-            <button onClick={loadPagamentos} className="p-2 text-gray-500 hover:text-gray-200 hover:bg-bg-card rounded-lg transition-colors">
-              <RefreshCw size={14} />
-            </button>
+            <div className="flex items-center gap-2">
+              <BotaoExportar
+                titulo="Relatório de Pagamentos"
+                colunas={[
+                  { header: 'Aluno',          accessor: p => p.aluno?.nome },
+                  { header: 'Turma',          accessor: p => p.aluno?.turma?.nome ?? '—' },
+                  { header: 'Mês',            accessor: p => p.mes },
+                  { header: 'Valor',          accessor: p => p.valor?.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) },
+                  { header: 'Status',         accessor: p => p.pago ? 'Pago' : 'Pendente' },
+                  { header: 'Data Pagamento', accessor: p => p.dataPagamento ? new Date(p.dataPagamento).toLocaleDateString('pt-BR') : '—' },
+                ]}
+                dados={pagamentos}
+                nomeArquivo="pagamentos"
+              />
+              <button onClick={loadPagamentos} className="p-2 text-gray-500 hover:text-gray-200 hover:bg-bg-card rounded-lg transition-colors">
+                <RefreshCw size={14} />
+              </button>
+            </div>
           </div>
           {loading ? (
             <p className="text-sm text-gray-500 text-center py-8">Carregando...</p>

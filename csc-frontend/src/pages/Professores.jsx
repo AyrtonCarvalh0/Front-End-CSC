@@ -3,8 +3,10 @@ import { Search, Plus, Trash2, Edit2, Users } from 'lucide-react'
 import toast from 'react-hot-toast'
 import api from '../api/axios'
 import Modal from '../components/Modal'
+import ModalConfirmacao from '../components/ModalConfirmacao'
 import Table from '../components/Table'
 import EmptyState from '../components/EmptyState'
+import { useConfirmacao } from '../hooks/useConfirmacao'
 
 const inputCls = 'w-full bg-bg-card border border-dim rounded-lg px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-accent/50 transition-colors placeholder-gray-600'
 
@@ -64,6 +66,7 @@ export default function Professores() {
   const [modalEditar, setModalEditar] = useState(false)
   const [profSel, setProfSel]         = useState(null)
   const [form, setForm]               = useState(emptyForm)
+  const { config, confirmar, fechar } = useConfirmacao()
 
   const load = async () => {
     setLoading(true)
@@ -107,15 +110,21 @@ export default function Professores() {
     }
   }
 
-  const handleDeletar = async (prof) => {
-    if (!confirm(`Deletar ${prof.name}?`)) return
-    try {
-      await api.delete(`/professores/${prof.id}`)
-      toast.success('Professor removido')
-      load()
-    } catch (e) {
-      toast.error(e.response?.data?.message ?? 'Erro ao deletar')
-    }
+  const handleDeletar = (prof) => {
+    confirmar({
+      titulo: 'Deletar professor',
+      mensagem: `Tem certeza que deseja remover o professor "${prof.name}"?`,
+      tipo: 'danger',
+      onConfirmar: async () => {
+        try {
+          await api.delete(`/professores/${prof.id}`)
+          toast.success('Professor removido')
+          load()
+        } catch (e) {
+          toast.error(e.response?.data?.message ?? 'Erro ao deletar')
+        }
+      },
+    })
   }
 
   const abrirEditar = (prof) => {
@@ -177,6 +186,15 @@ export default function Professores() {
       ) : (
         <Table columns={columns} data={filtrados} />
       )}
+
+      <ModalConfirmacao
+        open={config.open}
+        onClose={fechar}
+        onConfirmar={config.onConfirmar}
+        titulo={config.titulo}
+        mensagem={config.mensagem}
+        tipo={config.tipo}
+      />
 
       <Modal open={modalCriar} onClose={() => setModalCriar(false)} title="Cadastrar professor">
         <FormProf form={form} setForm={setForm} />

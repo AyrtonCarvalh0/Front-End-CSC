@@ -10,12 +10,15 @@ import Turmas from './pages/Turmas'
 import Responsaveis from './pages/Responsaveis'
 import Pagamentos from './pages/Pagamentos'
 import Relatorios from './pages/Relatorios'
+import Usuarios from './pages/Usuarios'
+import MeuPerfil from './pages/MeuPerfil'
 
 export default function App() {
   return (
     <BrowserRouter>
       <Toaster
         position="top-right"
+        containerStyle={{ zIndex: 9999 }}
         toastOptions={{
           style: {
             background: '#1f2330',
@@ -41,6 +44,8 @@ export default function App() {
           <Route path="responsaveis" element={<Responsaveis />} />
           <Route path="pagamentos"   element={<Pagamentos />} />
           <Route path="relatorios"   element={<Relatorios />} />
+          <Route path="usuarios"     element={<Usuarios />} />
+          <Route path="meu-perfil"   element={<MeuPerfil />} />
         </Route>
       </Routes>
     </BrowserRouter>

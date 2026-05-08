@@ -3,8 +3,10 @@ import { Search, Plus, Trash2, Edit2, Heart } from 'lucide-react'
 import toast from 'react-hot-toast'
 import api from '../api/axios'
 import Modal from '../components/Modal'
+import ModalConfirmacao from '../components/ModalConfirmacao'
 import Table from '../components/Table'
 import EmptyState from '../components/EmptyState'
+import { useConfirmacao } from '../hooks/useConfirmacao'
 
 const inputCls = 'w-full bg-bg-card border border-dim rounded-lg px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-accent/50 transition-colors placeholder-gray-600'
 
@@ -67,6 +69,7 @@ export default function Responsaveis() {
   const [modalEditar, setModalEditar]   = useState(false)
   const [respSel, setRespSel]           = useState(null)
   const [form, setForm]                 = useState(emptyForm)
+  const { config, confirmar, fechar }   = useConfirmacao()
 
   const load = async () => {
     setLoading(true)
@@ -126,15 +129,21 @@ export default function Responsaveis() {
     }
   }
 
-  const handleDeletar = async (resp) => {
-    if (!confirm(`Deletar ${resp.name}?`)) return
-    try {
-      await api.delete(`/responsavel/${resp.id}`)
-      toast.success('Responsável removido')
-      load()
-    } catch (e) {
-      toast.error(e.response?.data?.message ?? 'Erro ao deletar')
-    }
+  const handleDeletar = (resp) => {
+    confirmar({
+      titulo: 'Deletar responsável',
+      mensagem: `Tem certeza que deseja remover "${resp.name}"?`,
+      tipo: 'danger',
+      onConfirmar: async () => {
+        try {
+          await api.delete(`/responsavel/${resp.id}`)
+          toast.success('Responsável removido')
+          load()
+        } catch (e) {
+          toast.error(e.response?.data?.message ?? 'Erro ao deletar')
+        }
+      },
+    })
   }
 
   const abrirEditar = (resp) => {
@@ -203,6 +212,15 @@ export default function Responsaveis() {
       ) : (
         <Table columns={columns} data={responsaveis} />
       )}
+
+      <ModalConfirmacao
+        open={config.open}
+        onClose={fechar}
+        onConfirmar={config.onConfirmar}
+        titulo={config.titulo}
+        mensagem={config.mensagem}
+        tipo={config.tipo}
+      />
 
       <Modal open={modalCriar} onClose={() => setModalCriar(false)} title="Cadastrar responsável">
         <FormResp form={form} setForm={setForm} />

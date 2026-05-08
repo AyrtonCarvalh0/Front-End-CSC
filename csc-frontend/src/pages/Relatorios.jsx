@@ -6,6 +6,7 @@ import api from '../api/axios'
 import StatCard from '../components/StatCard'
 import Badge from '../components/Badge'
 import EmptyState from '../components/EmptyState'
+import BotaoExportar from '../components/BotaoExportar'
 
 const inputCls = 'bg-bg-card border border-dim rounded-lg px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-accent/50 transition-colors placeholder-gray-600'
 const selectCls = inputCls + ' appearance-none'
@@ -102,9 +103,23 @@ export default function Relatorios() {
     <div className="space-y-8">
       {/* 1. Resumo financeiro */}
       <section className="space-y-4">
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-500">
-          Resumo financeiro mensal
-        </h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-500">
+            Resumo financeiro mensal
+          </h2>
+          <BotaoExportar
+            titulo={`Resumo Financeiro — ${toApiMes(mesFin)}`}
+            colunas={[
+              { header: 'Mês',             accessor: r => r.mes ?? toApiMes(mesFin) },
+              { header: 'Total Recebido',  accessor: r => r.totalRecebido?.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) },
+              { header: 'Total Pendente',  accessor: r => r.totalPendente?.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) },
+              { header: 'Total Esperado',  accessor: r => r.totalEsperado?.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) },
+              { header: 'Qtd Pagamentos',  accessor: r => r.quantidadePagamentos },
+            ]}
+            dados={resumo ? [resumo] : []}
+            nomeArquivo={`resumo-financeiro-${toApiMes(mesFin)?.replace('/', '-')}`}
+          />
+        </div>
         <div className="bg-bg-secondary border border-dim rounded-xl p-5 space-y-4 max-w-xl">
           <div className="flex items-end gap-3">
             <div className="flex-1">
@@ -158,11 +173,23 @@ export default function Relatorios() {
           <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-500">
             Lista geral de inadimplentes
           </h2>
-          {!devCarregados && (
-            <button onClick={carregarTodosDevedores} className={btnPrimary}>
-              <span className="flex items-center gap-2"><Search size={14} /> Carregar devedores</span>
-            </button>
-          )}
+          <div className="flex items-center gap-3">
+            <BotaoExportar
+              titulo="Relatório de Inadimplência"
+              colunas={[
+                { header: 'Aluno', accessor: d => d.aluno?.nome ?? d.nomeAluno ?? '—' },
+                { header: 'Mês',   accessor: d => d.mes },
+                { header: 'Valor', accessor: d => d.valor?.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) },
+              ]}
+              dados={todosDevedores}
+              nomeArquivo="inadimplentes"
+            />
+            {!devCarregados && (
+              <button onClick={carregarTodosDevedores} className={btnPrimary}>
+                <span className="flex items-center gap-2"><Search size={14} /> Carregar devedores</span>
+              </button>
+            )}
+          </div>
         </div>
 
         {loadingDev ? (
@@ -201,9 +228,21 @@ export default function Relatorios() {
 
       {/* 3. Inadimplência por turma */}
       <section className="space-y-4">
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-500">
-          Inadimplência por turma
-        </h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-500">
+            Inadimplência por turma
+          </h2>
+          <BotaoExportar
+            titulo={`Inadimplência por Turma — ${toApiMes(mesTurma)}`}
+            colunas={[
+              { header: 'Aluno', accessor: d => d.nomeAluno },
+              { header: 'Mês',   accessor: d => d.mes },
+              { header: 'Valor', accessor: d => d.valor?.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) },
+            ]}
+            dados={devTurma}
+            nomeArquivo={`inadimplencia-turma-${toApiMes(mesTurma)?.replace('/', '-')}`}
+          />
+        </div>
         <div className="bg-bg-secondary border border-dim rounded-xl p-5 space-y-4">
           <div className="flex items-end gap-3 flex-wrap">
             <div>

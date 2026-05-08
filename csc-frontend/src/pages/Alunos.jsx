@@ -3,9 +3,11 @@ import { Search, Plus, Trash2, FileText, Edit2, GraduationCap } from 'lucide-rea
 import toast from 'react-hot-toast'
 import api from '../api/axios'
 import Modal from '../components/Modal'
+import ModalConfirmacao from '../components/ModalConfirmacao'
 import Table from '../components/Table'
 import Badge from '../components/Badge'
 import EmptyState from '../components/EmptyState'
+import { useConfirmacao } from '../hooks/useConfirmacao'
 
 const inputCls = 'w-full bg-bg-card border border-dim rounded-lg px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-accent/50 transition-colors placeholder-gray-600'
 const selectCls = inputCls + ' appearance-none'
@@ -83,6 +85,7 @@ export default function Alunos() {
   const [fichaData, setFichaData]         = useState(null)
   const [alunoSel, setAlunoSel]           = useState(null)
   const [form, setForm]                   = useState(emptyForm)
+  const { config, confirmar, fechar }     = useConfirmacao()
 
   const load = async () => {
     setLoading(true)
@@ -145,15 +148,21 @@ export default function Alunos() {
     }
   }
 
-  const handleDeletar = async (aluno) => {
-    if (!confirm(`Deletar ${aluno.nome}?`)) return
-    try {
-      await api.delete(`/aluno/${aluno.id}`)
-      toast.success('Aluno removido')
-      load()
-    } catch (e) {
-      toast.error(e.response?.data?.message ?? 'Erro ao deletar')
-    }
+  const handleDeletar = (aluno) => {
+    confirmar({
+      titulo: 'Deletar aluno',
+      mensagem: `Tem certeza que deseja remover "${aluno.nome}"? Esta ação não pode ser desfeita.`,
+      tipo: 'danger',
+      onConfirmar: async () => {
+        try {
+          await api.delete(`/aluno/${aluno.id}`)
+          toast.success('Aluno removido')
+          load()
+        } catch (e) {
+          toast.error(e.response?.data?.message ?? 'Erro ao deletar')
+        }
+      },
+    })
   }
 
   const handleFicha = async (aluno) => {
@@ -268,6 +277,15 @@ export default function Alunos() {
           <button onClick={handleEditar} className={btnPrimary}>Salvar</button>
         </div>
       </Modal>
+
+      <ModalConfirmacao
+        open={config.open}
+        onClose={fechar}
+        onConfirmar={config.onConfirmar}
+        titulo={config.titulo}
+        mensagem={config.mensagem}
+        tipo={config.tipo}
+      />
 
       <Modal open={modalFicha} onClose={() => setModalFicha(false)} title="Ficha do Aluno" size="lg">
         {fichaData && (
