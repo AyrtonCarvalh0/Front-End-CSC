@@ -2,7 +2,7 @@ import { NavLink } from 'react-router-dom'
 import {
   LayoutDashboard, Users, GraduationCap, BookOpen,
   Heart, CreditCard, BarChart3, Shield, UserCircle, LogOut,
-  ClipboardList
+  ClipboardList, X
 } from 'lucide-react'
 
 const nav = [
@@ -21,7 +21,7 @@ const adminNav = [
   { label: 'Meu Perfil', to: '/meu-perfil', icon: UserCircle    },
 ]
 
-export default function Sidebar() {
+export default function Sidebar({ onClose }) {
   const user = JSON.parse(localStorage.getItem('csc_user') || '{}')
   const isAdmin = user.role === 'ADMIN'
 
@@ -32,8 +32,15 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="w-[240px] min-h-screen flex flex-col flex-shrink-0 border-r"
+    <aside className="relative w-[240px] h-full min-h-screen flex flex-col flex-shrink-0 border-r"
       style={{ background: '#0f1117', borderColor: 'rgba(255,255,255,0.06)' }}>
+
+      {/* Botão fechar — só no mobile */}
+      <button
+        onClick={onClose}
+        className="lg:hidden absolute top-4 right-4 p-1.5 rounded-lg text-gray-500 hover:text-gray-200 hover:bg-white/5 transition-colors z-10">
+        <X size={16} />
+      </button>
 
       {/* Logo */}
       <div className="px-5 py-6 flex flex-col items-center gap-3"
@@ -59,7 +66,7 @@ export default function Sidebar() {
           Menu
         </p>
         {nav.map(({ label, to, icon: Icon }) => (
-          <NavLink key={to} to={to}
+          <NavLink key={to} to={to} onClick={onClose}
             className={({ isActive }) =>
               `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
               ${isActive
@@ -78,7 +85,7 @@ export default function Sidebar() {
               Administração
             </p>
             {adminNav.map(({ label, to, icon: Icon }) => (
-              <NavLink key={to} to={to}
+              <NavLink key={to} to={to} onClick={onClose}
                 className={({ isActive }) =>
                   `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
                   ${isActive
