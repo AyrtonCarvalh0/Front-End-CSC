@@ -217,7 +217,7 @@ export default function Usuarios() {
                   </td>
                   <td className="px-4 py-3">
                     <Badge color={u.role === 'ADMIN' ? 'accent' : 'purple'}>
-                      {u.role === 'ADMIN' ? '⚡ Admin' : '👤 Secretaria'}
+                      {u.role === 'ADMIN' ? 'Admin' : 'Secretaria'}
                     </Badge>
                   </td>
                   <td className="px-4 py-3">

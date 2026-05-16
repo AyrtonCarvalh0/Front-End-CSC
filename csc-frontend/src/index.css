@@ -1,44 +1,49 @@
 @import "tailwindcss";
 
 @theme {
-  --color-bg-primary:   #0a0b0e;
-  --color-bg-secondary: #111318;
-  --color-bg-tertiary:  #181b22;
-  --color-bg-card:      #1f2330;
+  --color-bg-primary:   #080a0f;
+  --color-bg-secondary: #0f1117;
+  --color-bg-tertiary:  #141720;
+  --color-bg-card:      #191d28;
 
-  --color-accent:       #4f7cff;
-  --color-accent-hover: #3d6aff;
+  --color-accent:       #3b82f6;
+  --color-accent-hover: #2563eb;
 
-  --color-success: #2dd4a0;
-  --color-danger:  #ff5c7a;
-  --color-warning: #ffb347;
-  --color-purple:  #a78bfa;
+  --color-csc-blue:        #3b82f6;
+  --color-csc-blue2:       #2563eb;
+  --color-csc-yellow:      #f59e0b;
+  --color-csc-lightblue:   rgba(59, 130, 246, 0.08);
+  --color-csc-lightyellow: rgba(245, 158, 11, 0.08);
 
-  --font-family-sans: 'DM Sans', sans-serif;
+  --color-success: #22c55e;
+  --color-danger:  #ef4444;
+  --color-warning: #f59e0b;
+  --color-purple:  #8b5cf6;
+
+  --font-family-sans: 'Nunito', sans-serif;
   --font-family-mono: 'DM Mono', monospace;
 }
 
-* { scrollbar-width: thin; scrollbar-color: #1f2330 transparent; }
+* { scrollbar-width: thin; scrollbar-color: #191d28 transparent; }
 
 body {
-  background: #0a0b0e;
-  color: #e8eaf0;
-  font-family: 'DM Sans', sans-serif;
+  background: #080a0f;
+  color: #e2e8f0;
+  font-family: 'Nunito', sans-serif;
   margin: 0;
 }
 
-/* Default subtle border used throughout the UI */
-.border-dim { border-color: rgba(255,255,255,0.07); }
-.border-dim-strong { border-color: rgba(255,255,255,0.12); }
+.border-dim { border-color: rgba(255,255,255,0.06); }
+.border-dim-strong { border-color: rgba(255,255,255,0.10); }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
+  from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 .fade-in { animation: fadeIn 0.2s ease; }
 
 @keyframes pulse-dot {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
+  50%       { opacity: 0.3; }
 }
 .pulse-dot { animation: pulse-dot 2s infinite; }

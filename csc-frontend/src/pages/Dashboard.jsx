@@ -276,7 +276,7 @@ export default function Dashboard() {
           </div>
           {vencimentos.length === 0 ? (
             <p className="text-sm text-gray-600 py-6 text-center">
-              Nenhum vencimento pendente 🎉
+              Nenhum vencimento pendente
             </p>
           ) : (
             <div className="space-y-2 max-h-56 overflow-y-auto">
@@ -310,7 +310,7 @@ export default function Dashboard() {
           </div>
           {devedores.length === 0 ? (
             <p className="text-sm text-gray-600 py-6 text-center">
-              Nenhum devedor este mês 🎉
+              Nenhum devedor este mês
             </p>
           ) : (
             <div className="space-y-2 max-h-56 overflow-y-auto">

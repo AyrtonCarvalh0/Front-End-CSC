@@ -12,6 +12,7 @@ import Pagamentos from './pages/Pagamentos'
 import Relatorios from './pages/Relatorios'
 import Usuarios from './pages/Usuarios'
 import MeuPerfil from './pages/MeuPerfil'
+import Auditoria from './pages/Auditoria'
 
 export default function App() {
   return (
@@ -21,14 +22,20 @@ export default function App() {
         containerStyle={{ zIndex: 9999 }}
         toastOptions={{
           style: {
-            background: '#1f2330',
-            color: '#e8eaf0',
-            border: '1px solid rgba(255,255,255,0.07)',
+            background: '#191d28',
+            color: '#e2e8f0',
+            border: '1px solid rgba(255,255,255,0.08)',
             borderRadius: '10px',
             fontSize: '14px',
+            fontWeight: '600',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
           },
-          success: { iconTheme: { primary: '#2dd4a0', secondary: '#0a0b0e' } },
-          error:   { iconTheme: { primary: '#ff5c7a', secondary: '#0a0b0e' } },
+          success: {
+            iconTheme: { primary: '#22c55e', secondary: '#191d28' },
+          },
+          error: {
+            iconTheme: { primary: '#ef4444', secondary: '#191d28' },
+          },
         }}
       />
       <Routes>
@@ -46,6 +53,7 @@ export default function App() {
           <Route path="relatorios"   element={<Relatorios />} />
           <Route path="usuarios"     element={<Usuarios />} />
           <Route path="meu-perfil"   element={<MeuPerfil />} />
+          <Route path="auditoria"    element={<Auditoria />} />
         </Route>
       </Routes>
     </BrowserRouter>

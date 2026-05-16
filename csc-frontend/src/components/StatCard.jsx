@@ -1,21 +1,27 @@
 export default function StatCard({ label, value, icon: Icon, color = 'accent', sub }) {
-  const colors = {
-    accent:  'text-accent  bg-accent/10  border-accent/20',
-    success: 'text-success bg-success/10 border-success/20',
-    danger:  'text-danger  bg-danger/10  border-danger/20',
-    warning: 'text-warning bg-warning/10 border-warning/20',
-    purple:  'text-purple  bg-purple/10  border-purple/20',
+  const bgColors = {
+    accent:  'from-csc-blue to-blue-600',
+    success: 'from-success to-green-600',
+    danger:  'from-danger to-red-600',
+    warning: 'from-csc-yellow to-amber-500',
+    purple:  'from-purple to-violet-600',
   }
 
   return (
-    <div className="bg-bg-secondary border border-dim rounded-xl p-5 flex items-start gap-4">
-      <div className={`p-2.5 rounded-lg border ${colors[color]}`}>
-        <Icon size={18} />
+    <div className="bg-bg-secondary border border-white/5 rounded-2xl p-5
+      flex items-start gap-4">
+      <div className={`p-3 rounded-xl bg-gradient-to-br
+        ${bgColors[color]} shadow-md`}>
+        <Icon size={20} className="text-white" />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-xs text-gray-500 mb-1">{label}</p>
-        <p className="text-2xl font-semibold tracking-tight">{value}</p>
-        {sub && <p className="text-xs text-gray-500 mt-1">{sub}</p>}
+        <p className="text-xs font-bold text-gray-500 uppercase
+          tracking-wider mb-1">{label}</p>
+        <p className="text-2xl font-extrabold text-gray-100
+          tracking-tight">{value}</p>
+        {sub && (
+          <p className="text-xs text-gray-500 mt-0.5 font-medium">{sub}</p>
+        )}
       </div>
     </div>
   )

@@ -69,7 +69,7 @@ export default function MeuPerfil() {
         <div>
           <p className="font-medium text-lg">{user.login}</p>
           <p className="text-xs text-gray-500 mt-0.5">
-            {user.role === 'ADMIN' ? '⚡ Administrador' : '👤 Secretaria'}
+            {user.role === 'ADMIN' ? 'Administrador' : 'Secretaria'}
           </p>
         </div>
       </div>
@@ -81,11 +81,11 @@ export default function MeuPerfil() {
         </h3>
 
         <form onSubmit={handleTrocar} className="space-y-4">
-          <CampoSenha label="Senha atual"          field="senhaAtual" showField="atual"
+          <CampoSenha label="Senha atual"         field="senhaAtual" showField="atual"
             form={form} setForm={setForm} mostrar={mostrar} setMostrar={setMostrar} />
-          <CampoSenha label="Nova senha"            field="novaSenha"  showField="nova"
+          <CampoSenha label="Nova senha"           field="novaSenha"  showField="nova"
             form={form} setForm={setForm} mostrar={mostrar} setMostrar={setMostrar} />
-          <CampoSenha label="Confirmar nova senha"  field="confirmar"  showField="confirmar"
+          <CampoSenha label="Confirmar nova senha" field="confirmar"  showField="confirmar"
             form={form} setForm={setForm} mostrar={mostrar} setMostrar={setMostrar} />
 
           {form.novaSenha && (
