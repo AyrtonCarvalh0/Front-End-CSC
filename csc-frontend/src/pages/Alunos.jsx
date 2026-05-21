@@ -118,9 +118,9 @@ export default function Alunos() {
       await api.post('/aluno', {
         nome: form.nome,
         cpf: form.cpf,
-        data_nascimento: form.data_nascimento || null,
-        responsavel: form.responsavelId ? { id: form.responsavelId } : null,
-        turma: form.turmaId ? { id: form.turmaId } : null,
+        dataNascimento: form.data_nascimento || null,
+        responsavelId: form.responsavelId || null,
+        turmaId: form.turmaId || null,
       })
       toast.success('Aluno cadastrado!')
       setModalCriar(false)
