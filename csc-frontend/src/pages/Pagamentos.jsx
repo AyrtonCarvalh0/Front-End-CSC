@@ -31,6 +31,7 @@ export default function Pagamentos() {
   const [pagamentos, setPagamentos] = useState([])
   const [turmas, setTurmas]         = useState([])
   const [loading, setLoading]       = useState(false)
+   const [mesFiltro, setMesFiltro] = useState('')
 
   // Gerar mensalidades
   const [mesGerar, setMesGerar]     = useState(mesHoje())
@@ -48,6 +49,8 @@ export default function Pagamentos() {
   const [mesCaixa, setMesCaixa]     = useState(mesHoje())
   const [resumo, setResumo]         = useState(null)
   const [buscandoCaixa, setBuscandoCaixa] = useState(false)
+
+
 
   const loadPagamentos = async () => {
     setLoading(true)
@@ -133,6 +136,11 @@ export default function Pagamentos() {
   }
 
   const fmt = (v) => v?.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) ?? 'R$ 0,00'
+  
+  const mesesUnicos = [...new Set(pagamentos.map(p => p.mes))].sort() // 👈 AQUI
+  const pagamentosFiltrados = mesFiltro                                // 👈 AQUI
+    ? pagamentos.filter(p => p.mes === mesFiltro)                      // 👈 AQUI
+    : pagamentos        
 
   const abas = [
     { key: 'lista',     label: 'Todos os pagamentos' },
@@ -194,8 +202,21 @@ export default function Pagamentos() {
       {aba === 'lista' && (
         <div className="space-y-4">
           <div className="flex justify-between items-center">
-            <p className="text-sm text-gray-500">{pagamentos.length} pagamentos encontrados</p>
+            <p className="text-sm text-gray-500">{pagamentosFiltrados.length} pagamentos encontrados</p>
             <div className="flex items-center gap-2">
+              <select
+                  className={selectCls}
+                  value={mesFiltro}
+                  onChange={e => setMesFiltro(e.target.value)}
+                >
+                  <option value="">Todos os meses</option>
+                  {mesesUnicos.map(m => (
+                    <option key={m} value={m}>{m}</option>
+                  ))}
+                </select>
+
+
+
               <BotaoExportar
                 titulo="Relatório de Pagamentos"
                 colunas={[
@@ -206,7 +227,7 @@ export default function Pagamentos() {
                   { header: 'Status',         accessor: p => p.pago ? 'Pago' : 'Pendente' },
                   { header: 'Data Pagamento', accessor: p => p.dataPagamento ? new Date(p.dataPagamento).toLocaleDateString('pt-BR') : '—' },
                 ]}
-                dados={pagamentos}
+                dados={pagamentosFiltrados}
                 nomeArquivo="pagamentos"
               />
               <button onClick={loadPagamentos} className="p-2 text-gray-500 hover:text-gray-200 hover:bg-bg-card rounded-lg transition-colors">
@@ -219,7 +240,7 @@ export default function Pagamentos() {
           ) : pagamentos.length === 0 ? (
             <EmptyState icon={CreditCard} message="Nenhum pagamento encontrado" />
           ) : (
-            <Table columns={columns} data={pagamentos} />
+            <Table columns={columns} data={pagamentosFiltrados} />
           )}
         </div>
       )}
