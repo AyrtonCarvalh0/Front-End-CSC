@@ -13,6 +13,7 @@ import Relatorios from './pages/Relatorios'
 import Usuarios from './pages/Usuarios'
 import MeuPerfil from './pages/MeuPerfil'
 import Auditoria from './pages/Auditoria'
+import ChatWidget from './ChatWidget';
 
 export default function App() {
   return (
@@ -38,6 +39,7 @@ export default function App() {
           },
         }}
       />
+      
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/" element={
@@ -56,6 +58,10 @@ export default function App() {
           <Route path="auditoria"    element={<Auditoria />} />
         </Route>
       </Routes>
+
+      {/* O ChatWidget entra aqui, flutuando globalmente em todas as rotas */}
+      <ChatWidget />
+      
     </BrowserRouter>
   )
 }
